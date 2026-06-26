@@ -88,7 +88,7 @@
             statusEl.className = 'status-error';
             statusEl.textContent = 'Init FALLITO: ' + data.message;
           }
-          else if (data.accountId) {
+          else if (data.accountName) {
             statusEl.className = 'status-ok';
             statusEl.textContent = 'Init OK — Account: ' + data.accountName + ' (ID: ' + data.accountId + ')';
           }
