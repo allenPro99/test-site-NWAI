@@ -63,7 +63,31 @@
     </ul>
   </div>
 
-  <!-- SNIPPET — copiato dal setup Bubble (account prod) -->
+  <!-- monitor: intercetta fetch PRIMA che widget.js lo chiami -->
+  <script>
+    const statusEl = document.getElementById('status');
+    const origFetch = window.fetch;
+    window.fetch = async function(...args) {
+      const response = await origFetch.apply(this, args);
+      const url = typeof args[0] === 'string' ? args[0] : args[0]?.url || '';
+      if (url.includes('execute-api') || url.includes('amazonaws')) {
+        const clone = response.clone();
+        clone.json().then(data => {
+          if (data.error) {
+            statusEl.className = 'status-error';
+            statusEl.textContent = 'Init FALLITO: ' + data.message;
+          }
+          else if (data.accountName) {
+            statusEl.className = 'status-ok';
+            statusEl.textContent = 'Init OK — ' + data.accountName + ' | Widget: ' + (data.widgetType || 'n/a') + ' | CSS: ' + (data.cssCode || 'n/a') + ' | ConvFlow: ' + (data.inboundConversationFlow ? data.inboundConversationFlow.substring(0, 12) + '...' : 'n/a');
+          }
+        }).catch(() => {});
+      }
+      return response;
+    };
+  </script>
+
+  <!-- SNIPPET — copiato dal setup Bubble (aggiornare token/apiKey/widgetID dopo ogni setup) -->
   <script>
   window.widgetConfig = {
     token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvcmlnaW4iOiJhbGxlbnBybzk5LmdpdGh1Yi5pbyIsImFjY291bnRJZCI6IjE3MzAyOTYwMTQ2MzF4OTUwNTY2NzM1MjIyNjY5MzAwIiwid2lkZ2V0SUQiOiIxNzgyNDYzNjI3NzQ4eDc2OTIxMjcxNjM4OTU0MDAwMCIsImlhdCI6MTc4MjQ2ODQ5Nn0.YP4upNGRX86AZg3vg34xI1x4YVettD2SblU7xaauRvc",
@@ -73,29 +97,5 @@
   };
 </script>
 <script src="https://d3peztetvy795m.cloudfront.net/latest/widget.js"></script>
-
-  <script>
-    // aggiorna lo status box quando il widget si inizializza
-    const statusEl = document.getElementById('status');
-    const origFetch = window.fetch;
-    window.fetch = async function(...args) {
-      const response = await origFetch.apply(this, args);
-      const url = typeof args[0] === 'string' ? args[0] : args[0]?.url || '';
-      if (url.includes('action') || url.includes('execute-api') || url.includes('amazonaws')) {
-        const clone = response.clone();
-        clone.json().then(data => {
-          if (data.error) {
-            statusEl.className = 'status-error';
-            statusEl.textContent = 'Init FALLITO: ' + data.message;
-          }
-          else if (data.accountName) {
-            statusEl.className = 'status-ok';
-            statusEl.textContent = 'Init OK — Account: ' + data.accountName + ' (ID: ' + data.accountId + ')';
-          }
-        }).catch(() => {});
-      }
-      return response;
-    };
-  </script>
 </body>
 </html>
