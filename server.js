@@ -40,6 +40,10 @@ function resolveFilePath(urlPath) {
     return path.join(__dirname, 'index.html');
   }
 
+  if (urlPath === '/client.html') {
+    return path.join(__dirname, 'client.html');
+  }
+
   if (urlPath === '/widget.js') {
     return path.join(__dirname, '..', 'widget', 'dist', 'latest', 'widget.js');
   }
